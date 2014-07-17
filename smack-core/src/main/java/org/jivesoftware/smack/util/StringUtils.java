@@ -306,4 +306,15 @@ public class StringUtils {
         res = res.substring(0, res.length() - 1);
         return res;
     }
+
+    public static String returnIfNotEmptyTrimmed(String string) {
+        if (string == null)
+            return null;
+        String trimmedString = string.trim();
+        if (trimmedString.length() > 0) {
+            return trimmedString;
+        } else {
+            return null;
+        }
+    }
 }

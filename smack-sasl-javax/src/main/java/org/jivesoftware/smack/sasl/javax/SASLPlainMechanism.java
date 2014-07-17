@@ -14,22 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jivesoftware.smack.sasl;
-
-import org.jivesoftware.smack.SASLAuthentication;
+package org.jivesoftware.smack.sasl.javax;
 
 /**
- * Implementation of the SASL CRAM-MD5 mechanism
+ * Implementation of the SASL PLAIN mechanism
  *
  * @author Jay Kline
  */
-public class SASLCramMD5Mechanism extends SASLMechanism {
+public class SASLPlainMechanism extends SASLJavaXMechanism {
 
-    public SASLCramMD5Mechanism(SASLAuthentication saslAuthentication) {
-        super(saslAuthentication);
+    public String getName() {
+        return "PLAIN";
     }
 
-    protected String getName() {
-        return "CRAM-MD5";
+    @Override
+    public int getPriority() {
+        return 400;
+    }
+
+    @Override
+    public SASLPlainMechanism newInstance() {
+        return new SASLPlainMechanism();
     }
 }

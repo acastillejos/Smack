@@ -1,6 +1,6 @@
 /**
  *
- * Copyright the original author or authors
+ * Copyright 2014 Florian Schmaus
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jivesoftware.smack.sasl;
+package org.jivesoftware.smack.initializer;
 
-import org.jivesoftware.smack.SASLAuthentication;
+public abstract class SmackAndOsgiInitializer implements SmackInitializer {
 
-/**
- * Implementation of the SASL PLAIN mechanism
- *
- * @author Jay Kline
- */
-public class SASLPlainMechanism extends SASLMechanism {
-
-    public SASLPlainMechanism(SASLAuthentication saslAuthentication) {
-        super(saslAuthentication);
-    }
-
-    protected String getName() {
-        return "PLAIN";
+    /**
+     * A simple wrapper around {@link #initialize} for OSGi, as the activate method of a component
+     * must have a void return type.
+     */
+    public final void activate() {
+        initialize();
     }
 }
