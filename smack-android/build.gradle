@@ -1,0 +1,26 @@
+description = """\
+Smack for Android.
+All the required dependencies to run smack on Android"""
+
+ext {
+	androidProjects = ['smack-tcp','smack-core', 'smack-resolver-minidns', 'smack-sasl-provided', 'smack-extensions', 'smack-experimental']
+}
+
+// Note that the test dependencies (junit, …) are inferred from the
+// sourceSet.test of the core subproject
+dependencies {
+	androidProjects.each { name ->
+		compile project(":$name")
+	}
+}
+
+jar {
+	enabled = false
+}
+
+// TODO Add task buildWithAndroidTest which builds $androidProjects
+// with Android Runtime Jar as bootclasspath
+
+def getAndroidRuntimeJar() {
+	new File("/opt/android-sdk-update-manager/platforms/android-8/android.jar")
+}
