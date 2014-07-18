@@ -58,7 +58,8 @@ public abstract class AbstractXMPPConnection implements XMPPConnection {
     private static final String[] DEBUGGERS = new String[] {
                     "org.jivesoftware.smackx.debugger.EnhancedDebugger",
                     "org.jivesoftware.smackx.debugger.android.AndroidDebugger",
-                    "org.jivesoftware.smack.debugger.LiteDebugger" };
+                    "org.jivesoftware.smack.debugger.LiteDebugger",
+                    "org.jivesoftware.smack.debugger.ConsoleDebugger" };
 
     /** 
      * Counter to uniquely identify connections that are created.

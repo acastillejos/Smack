@@ -15,14 +15,25 @@ dependencies {
 	}
 }
 
-jar {
-	enabled = false
-}
-
 def getAndroidRuntimeJar() {
 	def androidHome = new File("$System.env.ANDROID_HOME")
 	if (!androidHome.isDirectory()) throw new Exception("ANDROID_HOME not found or set")
 	new File("$androidHome/platforms/android-$smackMinAndroidSdk/android.jar")
+}
+
+def getAndroidJavadocOffline() {
+	def androidHome = new File("$System.env.ANDROID_HOME")
+	if (!androidHome.isDirectory()) throw new Exception("ANDROID_HOME not found or set")
+	return "$System.env.ANDROID_HOME" + "/docs/reference"
+}
+
+compileJava {
+	options.bootClasspath = getAndroidRuntimeJar()
+}
+
+// See http://stackoverflow.com/a/2823592/194894
+javadoc {
+	options.linksOffline "http://developer.android.com/reference", getAndroidJavadocOffline()
 }
 
 configure (androidProjects) {
