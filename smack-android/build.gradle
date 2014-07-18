@@ -1,16 +1,17 @@
 description = """\
 Smack for Android.
-All the required dependencies to run smack on Android"""
+All the required dependencies to run Smack on Android"""
 
 ext {
-	androidProjects = ['smack-tcp','smack-core', 'smack-resolver-minidns', 'smack-sasl-provided', 'smack-extensions', 'smack-experimental']
+	smackMinAndroidSdk = 8
+	androidProjects = [':smack-tcp',':smack-core', ':smack-resolver-minidns', ':smack-sasl-provided', ':smack-extensions', ':smack-experimental'].collect{ project(it) }
 }
 
 // Note that the test dependencies (junit, …) are inferred from the
 // sourceSet.test of the core subproject
 dependencies {
-	androidProjects.each { name ->
-		compile project(":$name")
+	androidProjects.each { project ->
+		compile project
 	}
 }
 
@@ -18,9 +19,19 @@ jar {
 	enabled = false
 }
 
-// TODO Add task buildWithAndroidTest which builds $androidProjects
-// with Android Runtime Jar as bootclasspath
-
 def getAndroidRuntimeJar() {
-	new File("/opt/android-sdk-update-manager/platforms/android-8/android.jar")
+	def androidHome = new File("$System.env.ANDROID_HOME")
+	if (!androidHome.isDirectory()) throw new Exception("ANDROID_HOME not found or set")
+	new File("$androidHome/platforms/android-$smackMinAndroidSdk/android.jar")
 }
+
+configure (androidProjects) {
+	task compileAndroid(type: JavaCompile) {
+		source = compileJava.source
+		classpath = compileJava.classpath
+		destinationDir = new File(buildDir, 'android')
+		options.bootClasspath = getAndroidRuntimeJar()
+	}
+}
+
+test { dependsOn androidProjects*.compileAndroid }

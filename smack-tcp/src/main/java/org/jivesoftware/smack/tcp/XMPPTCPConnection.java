@@ -53,7 +53,6 @@ import javax.net.ssl.SSLSocket;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.PasswordCallback;
-import javax.security.sasl.SaslException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -246,7 +245,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
     }
 
     @Override
-    public synchronized void login(String username, String password, String resource) throws XMPPException, SmackException, SaslException, IOException {
+    public synchronized void login(String username, String password, String resource) throws XMPPException, SmackException, IOException {
         if (!isConnected()) {
             throw new NotConnectedException();
         }
@@ -265,7 +264,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                 saslAuthentication.authenticate(resource, config.getCallbackHandler());
             }
         } else {
-            throw new SaslException("No non-anonymous SASL authentication mechanism available");
+            throw new SmackException("No non-anonymous SASL authentication mechanism available");
         }
 
         // If compression is enabled then request the server to use stream compression. XEP-170
@@ -311,7 +310,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
     }
 
     @Override
-    public synchronized void loginAnonymously() throws XMPPException, SmackException, SaslException, IOException {
+    public synchronized void loginAnonymously() throws XMPPException, SmackException, IOException {
         if (!isConnected()) {
             throw new NotConnectedException();
         }
@@ -323,7 +322,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
             saslAuthentication.authenticateAnonymously();
         }
         else {
-            throw new SaslException("No anonymous SASL authentication mechanism available");
+            throw new SmackException("No anonymous SASL authentication mechanism available");
         }
 
         String response = bindResourceAndEstablishSession(null);
