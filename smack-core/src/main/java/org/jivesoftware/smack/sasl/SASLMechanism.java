@@ -160,7 +160,8 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
      * @throws NotConnectedException
      * @throws SmackException
      */
-    public final void challengeReceived(String challenge) throws SmackException, NotConnectedException {
+    public final void challengeReceived(String challengeString) throws SmackException, NotConnectedException {
+        byte[] challenge = StringUtils.decodeBase64(challengeString);
         byte response[] = evaluateChallenge(challenge);
 
         Response responseStanza;
@@ -175,7 +176,7 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
         connection.sendPacket(responseStanza);
     }
 
-    protected byte[] evaluateChallenge(String challenge) throws SmackException {
+    protected byte[] evaluateChallenge(byte[] challenge) throws SmackException {
         return null;
     }
 

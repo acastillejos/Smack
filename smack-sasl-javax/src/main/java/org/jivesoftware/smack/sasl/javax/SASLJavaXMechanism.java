@@ -124,10 +124,10 @@ public abstract class SASLJavaXMechanism extends SASLMechanism {
     }
 
     @Override
-    protected byte[] evaluateChallenge(String challenge) throws SmackException {
+    protected byte[] evaluateChallenge(byte[] challenge) throws SmackException {
         try {
             if (challenge != null) {
-                return sc.evaluateChallenge(StringUtils.decodeBase64(challenge));
+                return sc.evaluateChallenge(challenge);
             }
             else {
                 return sc.evaluateChallenge(new byte[0]);

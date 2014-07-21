@@ -23,39 +23,62 @@ import org.jivesoftware.smack.sasl.SASLMechanism;
 
 public class SASLDigestMD5Mechanism extends SASLMechanism {
 
-	@Override
-	protected void authenticateInternal(String username, String host,
-			String serviceName, String password) throws SmackException {
-		// TODO Auto-generated method stub
+    private String authorizationId;
+    private String protocol;
+    private String serverName;
+    private State state = State.INITIAL;
 
-	}
+    @Override
+    protected void authenticateInternal(String username, String host, String serviceName,
+                    String password) throws SmackException {
+        // TODO Auto-generated method stub
 
-	@Override
-	protected void authenticateInternal(String host, CallbackHandler cbh)
-			throws SmackException {
-		// TODO Auto-generated method stub
+    }
 
-	}
+    @Override
+    protected void authenticateInternal(String host, CallbackHandler cbh) throws SmackException {
+        // TODO Auto-generated method stub
 
-	@Override
-	protected String getAuthenticationText() throws SmackException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    }
 
-	@Override
-	public String getName() {
-		return "DIGEST-MD5";
-	}
+    @Override
+    protected String getAuthenticationText() throws SmackException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public int getPriority() {
-		return 210;
-	}
+    @Override
+    public String getName() {
+        return "DIGEST-MD5";
+    }
 
-	@Override
-	public SASLDigestMD5Mechanism newInstance() {
-		return new SASLDigestMD5Mechanism();
-	}
+    @Override
+    public int getPriority() {
+        return 210;
+    }
 
+    @Override
+    public SASLDigestMD5Mechanism newInstance() {
+        return new SASLDigestMD5Mechanism();
+    }
+
+    @Override
+    protected byte[] evaluateChallenge(byte[] challenge) throws SmackException {
+        byte[] response = null;
+        switch(state) {
+        case INITIAL:
+            if (challenge.length == 0) {
+                throw new SmackException("Response has zero length");
+            }
+            break;
+        }
+        return response;
+    }
+
+    private enum State {
+        INITIAL,
+        RESPONSE_SENT,
+        VALID_SERVER_RESPONSE,
+        INVALID_SERVER_RESPONSE,
+    }
 }
