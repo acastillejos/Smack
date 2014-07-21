@@ -150,8 +150,7 @@ public class SASLAuthentication {
             SASLMechanism mechanism = it.next();
             if (serverMechanisms.contains(mechanism.getName())) {
                 // Create a new instance of the SASLMechanism for every authentication attempt.
-                selectedMechanism = mechanism.newInstance();
-                selectedMechanism.setXMPPConnection(connection);
+                selectedMechanism = mechanism.instanceForAuthentication(connection);
                 break;
             }
         }
@@ -216,8 +215,7 @@ public class SASLAuthentication {
             SASLMechanism mechanism = it.next();
             if (serverMechanisms.contains(mechanism.getName())) {
                 // Create a new instance of the SASLMechanism for every authentication attempt.
-                selectedMechanism = mechanism.newInstance();
-                selectedMechanism.setXMPPConnection(connection);
+                selectedMechanism = mechanism.instanceForAuthentication(connection);
                 break;
             }
         }

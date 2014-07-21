@@ -66,10 +66,6 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
 
     protected XMPPConnection connection;
 
-    public final void setXMPPConnection(XMPPConnection connection) {
-        this.connection = connection;
-    }
-
     /**
      * Builds and sends the <tt>auth</tt> stanza to the server. Note that this method of
      * authentication is not recommended, since it is very inflexible. Use
@@ -192,6 +188,12 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
     public abstract String getName();
 
     public abstract int getPriority();
-    
-    public abstract SASLMechanism newInstance();
+
+    public SASLMechanism instanceForAuthentication(XMPPConnection connection) {
+        SASLMechanism saslMechansim = newInstance();
+        saslMechansim.connection = connection;
+        return saslMechansim;
+    }
+
+    protected abstract SASLMechanism newInstance();
 }
