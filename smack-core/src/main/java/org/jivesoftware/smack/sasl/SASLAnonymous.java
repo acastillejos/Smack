@@ -17,7 +17,6 @@
 package org.jivesoftware.smack.sasl;
 
 import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPConnection;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -38,13 +37,13 @@ public class SASLAnonymous extends SASLMechanism {
     }
 
     @Override
-    protected void authenticateInternal(XMPPConnection connection, String username, String host,
+    protected void authenticateInternal(String username, String host,
                     String serviceName, String password) throws SmackException {
         // Nothing to do here
     }
 
     @Override
-    protected void authenticateInternal(XMPPConnection connection, String host, CallbackHandler cbh)
+    protected void authenticateInternal(String host, CallbackHandler cbh)
                     throws SmackException {
         // Nothing to do here
     }

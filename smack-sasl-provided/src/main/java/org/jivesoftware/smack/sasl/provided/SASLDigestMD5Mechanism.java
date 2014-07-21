@@ -19,22 +19,20 @@ package org.jivesoftware.smack.sasl.provided;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.sasl.SASLMechanism;
 
 public class SASLDigestMD5Mechanism extends SASLMechanism {
 
 	@Override
-	protected void authenticateInternal(XMPPConnection connection,
-			String username, String host, String serviceName, String password)
-			throws SmackException {
+	protected void authenticateInternal(String username, String host,
+			String serviceName, String password) throws SmackException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	protected void authenticateInternal(XMPPConnection connection, String host,
-			CallbackHandler cbh) throws SmackException {
+	protected void authenticateInternal(String host, CallbackHandler cbh)
+			throws SmackException {
 		// TODO Auto-generated method stub
 
 	}

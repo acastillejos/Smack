@@ -16,7 +16,6 @@
  */
 package org.jivesoftware.smack.sasl;
 
-import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
@@ -64,6 +63,12 @@ import javax.security.auth.callback.CallbackHandler;
  * @author Jay Kline
  */
 public abstract class SASLMechanism implements Comparable<SASLMechanism> {
+
+    protected XMPPConnection connection;
+
+    public final void setXMPPConnection(XMPPConnection connection) {
+        this.connection = connection;
+    }
 
     /**
      * Builds and sends the <tt>auth</tt> stanza to the server. Note that this method of
@@ -116,11 +121,11 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
     public void authenticate(XMPPConnection connection, String username, String host,
                     String serviceName, String password) throws SmackException,
                     NotConnectedException {
-        authenticateInternal(connection, username, host, serviceName, password);
-        authenticate(connection);
+        authenticateInternal(username, host, serviceName, password);
+        authenticate();
     }
 
-    protected abstract void authenticateInternal(XMPPConnection connection, String username, String host, String serviceName, String password) throws SmackException;
+    protected abstract void authenticateInternal(String username, String host, String serviceName, String password) throws SmackException;
 
     /**
      * Builds and sends the <tt>auth</tt> stanza to the server. The callback handler will handle
@@ -131,15 +136,15 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
      * @throws SmackException
      * @throws NotConnectedException 
      */
-    public void authenticate(XMPPConnection connection, String host, CallbackHandler cbh)
+    public void authenticate(String host, CallbackHandler cbh)
                     throws SmackException, NotConnectedException {
-        authenticateInternal(connection, host, cbh);
-        authenticate(connection);
+        authenticateInternal(host, cbh);
+        authenticate();
     }
 
-    protected abstract void authenticateInternal(XMPPConnection connection, String host, CallbackHandler cbh) throws SmackException;
+    protected abstract void authenticateInternal(String host, CallbackHandler cbh) throws SmackException;
 
-    protected void authenticate(XMPPConnection connection) throws SmackException, NotConnectedException {
+    private final void authenticate() throws SmackException, NotConnectedException {
         String authenticationText = getAuthenticationText();
         // Send the authentication to the server
         connection.sendPacket(new AuthMechanism(getName(), authenticationText));
@@ -155,7 +160,7 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
      * @throws NotConnectedException
      * @throws SmackException
      */
-    public void challengeReceived(AbstractXMPPConnection connection, String challenge) throws SmackException, NotConnectedException {
+    public final void challengeReceived(String challenge) throws SmackException, NotConnectedException {
         byte response[] = evaluateChallenge(challenge);
 
         Response responseStanza;

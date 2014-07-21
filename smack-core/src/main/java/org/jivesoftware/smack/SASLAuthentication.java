@@ -151,6 +151,7 @@ public class SASLAuthentication {
             if (serverMechanisms.contains(mechanism.getName())) {
                 // Create a new instance of the SASLMechanism for every authentication attempt.
                 selectedMechanism = mechanism.newInstance();
+                selectedMechanism.setXMPPConnection(connection);
                 break;
             }
         }
@@ -162,7 +163,7 @@ public class SASLAuthentication {
                 // Trigger SASL authentication with the selected mechanism. We use
                 // connection.getHost() since GSAPI requires the FQDN of the server, which
                 // may not match the XMPP domain.
-                currentMechanism.authenticate(connection, connection.getHost(), cbh);
+                currentMechanism.authenticate(connection.getHost(), cbh);
                 try {
                     // Wait until SASL negotiation finishes
                     wait(connection.getPacketReplyTimeout());
@@ -216,6 +217,7 @@ public class SASLAuthentication {
             if (serverMechanisms.contains(mechanism.getName())) {
                 // Create a new instance of the SASLMechanism for every authentication attempt.
                 selectedMechanism = mechanism.newInstance();
+                selectedMechanism.setXMPPConnection(connection);
                 break;
             }
         }
@@ -322,7 +324,7 @@ public class SASLAuthentication {
      * @throws NotConnectedException 
      */
     public void challengeReceived(String challenge) throws Exception, NotConnectedException {
-        currentMechanism.challengeReceived(connection, challenge);
+        currentMechanism.challengeReceived(challenge);
     }
 
     /**

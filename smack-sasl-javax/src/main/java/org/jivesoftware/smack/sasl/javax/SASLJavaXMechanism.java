@@ -32,7 +32,6 @@ import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
 
 import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.sasl.SASLMechanism;
 import org.jivesoftware.smack.util.StringUtils;
 
@@ -44,7 +43,7 @@ public abstract class SASLJavaXMechanism extends SASLMechanism {
     public abstract String getName();
 
     @Override
-    protected void authenticateInternal(XMPPConnection connection, final String username,
+    protected void authenticateInternal(final String username,
                     final String host, final String serviceName, final String password)
                     throws SmackException {
         String[] mechanisms = { getName() };
@@ -97,7 +96,7 @@ public abstract class SASLJavaXMechanism extends SASLMechanism {
     }
 
     @Override
-    protected void authenticateInternal(XMPPConnection connection, String host, CallbackHandler cbh)
+    protected void authenticateInternal(String host, CallbackHandler cbh)
                     throws SmackException {
         String[] mechanisms = { getName() };
         Map<String, String> props = getSaslProps();
