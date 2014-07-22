@@ -30,9 +30,9 @@ import javax.security.auth.callback.CallbackHandler;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -57,9 +57,52 @@ public class SASLAuthentication {
 
     private static final Queue<SASLMechanism> REGISTERED_MECHANISMS = new PriorityQueue<SASLMechanism>();
 
+
+    /**
+     * Registers a new SASL mechanism
+     *
+     * @param mechanism a SASLMechanism subclass.
+     */
+    public static synchronized void registerSASLMechanism(SASLMechanism mechanism)  {
+        REGISTERED_MECHANISMS.add(mechanism);
+    }
+
+    /**
+     * Returns the registered SASLMechanism sorted by the level of preference.
+     *
+     * @return the registered SASLMechanism sorted by the level of preference.
+     */
+    public static synchronized Map<String, String> getRegisterdSASLMechanisms() {
+        Map<String, String> answer = new HashMap<String,String>();
+        for (SASLMechanism mechanism : REGISTERED_MECHANISMS) {
+            answer.put(mechanism.getClass().getName(), mechanism.getName());
+        }
+        return answer;
+    }
+
+    /**
+     * Unregister a SASLMechanism by it's full class name. For example
+     * "org.jivesoftware.smack.sasl.javax.SASLCramMD5Mechanism".
+     * 
+     * @param clazz the SASLMechanism class's name
+     * @return true if the given SASLMechanism was removed, false otherwise
+     */
+    public static synchronized boolean unregisterSASLMechanism(String clazz) {
+        Iterator<SASLMechanism> it = REGISTERED_MECHANISMS.iterator();
+        while (it.hasNext()) {
+            SASLMechanism mechanism = it.next();
+            if (mechanism.getClass().getName().equals(clazz)) {
+                it.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
     private final AbstractXMPPConnection connection;
     private Collection<String> serverMechanisms = new ArrayList<String>();
     private SASLMechanism currentMechanism = null;
+
     /**
      * Boolean indicating if SASL negotiation has finished and was successful.
      */
@@ -69,28 +112,6 @@ public class SASLAuthentication {
      * The SASL related error condition if there was one provided by the server.
      */
     private SASLFailure saslFailure;
-
-    /**
-     * Registers a new SASL mechanism
-     *
-     * @param mechanism a SASLMechanism subclass.
-     */
-    public static void registerSASLMechanism(SASLMechanism mechanism)  {
-        REGISTERED_MECHANISMS.add(mechanism);
-    }
-
-    /**
-     * Returns the registered SASLMechanism sorted by the level of preference.
-     *
-     * @return the registered SASLMechanism sorted by the level of preference.
-     */
-    public List<String> getRegisterdSASLMechanisms() {
-        List<String> answer = new ArrayList<String>(REGISTERED_MECHANISMS.size());
-        for (SASLMechanism mechanism : REGISTERED_MECHANISMS) {
-            answer.add(mechanism.getName());
-        }
-        return answer;
-    }
 
     SASLAuthentication(AbstractXMPPConnection connection) {
         this.connection = connection;
