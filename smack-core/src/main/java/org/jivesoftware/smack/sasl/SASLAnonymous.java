@@ -37,13 +37,7 @@ public class SASLAnonymous extends SASLMechanism {
     }
 
     @Override
-    protected void authenticateInternal(String username, String host,
-                    String serviceName, String password) throws SmackException {
-        // Nothing to do here
-    }
-
-    @Override
-    protected void authenticateInternal(String host, CallbackHandler cbh)
+    protected void authenticateInternal(CallbackHandler cbh)
                     throws SmackException {
         // Nothing to do here
     }

@@ -43,13 +43,12 @@ public abstract class SASLJavaXMechanism extends SASLMechanism {
     public abstract String getName();
 
     @Override
-    protected void authenticateInternal(final String username,
-                    final String host, final String serviceName, final String password)
+    protected void authenticateInternal()
                     throws SmackException {
         String[] mechanisms = { getName() };
         Map<String, String> props = getSaslProps();
         try {
-            sc = Sasl.createSaslClient(mechanisms, null, "xmpp", serviceName, props,
+            sc = Sasl.createSaslClient(mechanisms, null, "xmpp", getServerName(), props,
                             new CallbackHandler() {
                                 @Override
                                 public void handle(Callback[] callbacks) throws IOException,
@@ -57,7 +56,7 @@ public abstract class SASLJavaXMechanism extends SASLMechanism {
                                     for (int i = 0; i < callbacks.length; i++) {
                                         if (callbacks[i] instanceof NameCallback) {
                                             NameCallback ncb = (NameCallback) callbacks[i];
-                                            ncb.setName(username);
+                                            ncb.setName(authenticationId);
                                         }
                                         else if (callbacks[i] instanceof PasswordCallback) {
                                             PasswordCallback pcb = (PasswordCallback) callbacks[i];
@@ -96,7 +95,7 @@ public abstract class SASLJavaXMechanism extends SASLMechanism {
     }
 
     @Override
-    protected void authenticateInternal(String host, CallbackHandler cbh)
+    protected void authenticateInternal(CallbackHandler cbh)
                     throws SmackException {
         String[] mechanisms = { getName() };
         Map<String, String> props = getSaslProps();
@@ -140,5 +139,9 @@ public abstract class SASLJavaXMechanism extends SASLMechanism {
 
     protected Map<String,String> getSaslProps() {
         return new HashMap<String, String>();
+    }
+
+    protected String getServerName() {
+        return serviceName;
     }
 }

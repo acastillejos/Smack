@@ -44,6 +44,16 @@ public class SASLGSSAPIMechanism extends SASLJavaXMechanism {
         return props;
     }
 
+    /**
+     * GSSAPI differs from all other SASL mechanism such that it required the FQDN host name as
+     * server name and not the serviceName (At least that is what old code comments of Smack tell
+     * us).
+     */
+    @Override
+    protected String getServerName() {
+        return host;
+    }
+
     @Override
     public int getPriority() {
         return 100;

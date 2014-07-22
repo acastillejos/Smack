@@ -166,14 +166,9 @@ public class SASLAuthentication {
             }
         }
         if (selectedMechanism != null) {
-            // A SASL mechanism was found. Authenticate using the selected mechanism and then
-            // proceed to bind a resource
             currentMechanism = selectedMechanism;
             synchronized (this) {
-                // Trigger SASL authentication with the selected mechanism. We use
-                // connection.getHost() since GSAPI requires the FQDN of the server, which
-                // may not match the XMPP domain.
-                currentMechanism.authenticate(connection.getHost(), cbh);
+                currentMechanism.authenticate(connection.getHost(), connection.getServiceName(), cbh);
                 try {
                     // Wait until SASL negotiation finishes
                     wait(connection.getPacketReplyTimeout());
@@ -234,17 +229,8 @@ public class SASLAuthentication {
             currentMechanism = selectedMechanism;
 
             synchronized (this) {
-                // Trigger SASL authentication with the selected mechanism. We use
-                // connection.getHost() since GSAPI requires the FQDN of the server, which
-                // may not match the XMPP domain.
-
-                // The serviceName is basically the value that XMPP server sends to the client as
-                // being
-                // the location of the XMPP service we are trying to connect to. This should have
-                // the
-                // format: host ["/" serv-name ] as per RFC-2831 guidelines
-                String serviceName = connection.getServiceName();
-                currentMechanism.authenticate(username, connection.getHost(), serviceName, password);
+                currentMechanism.authenticate(username, connection.getHost(),
+                                connection.getServiceName(), password);
 
                 try {
                     // Wait until SASL negotiation finishes

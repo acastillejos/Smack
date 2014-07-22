@@ -33,7 +33,7 @@ import javax.security.auth.callback.CallbackHandler;
  * Subclasses will likely want to implement their own versions of these methods:
  *  <li>{@link #authenticate(String, String, String, String)} -- Initiate authentication stanza using the
  *  deprecated method.</li>
- *  <li>{@link #authenticate(String, CallbackHandler)} -- Initiate authentication stanza
+ *  <li>{@link #authenticate(String, String, CallbackHandler)} -- Initiate authentication stanza
  *  using the CallbackHandler method.</li>
  *  <li>{@link #challengeReceived(String)} -- Handle a challenge from the server.</li>
  * </ul>
@@ -66,10 +66,27 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
 
     protected XMPPConnection connection;
 
+
+    /**
+     * authcid
+     */
+    protected String authenticationId;
+
+    /**
+     * The name of the XMPP service
+     */
+    protected String serviceName;
+
+    /**
+     * The users password
+     */
+    protected String password;
+    protected String host;
+
     /**
      * Builds and sends the <tt>auth</tt> stanza to the server. Note that this method of
      * authentication is not recommended, since it is very inflexible. Use
-     * {@link #authenticate(String, CallbackHandler)} whenever possible.
+     * {@link #authenticate(String, String, CallbackHandler)} whenever possible.
      * 
      * Explanation of auth stanza:
      * 
@@ -113,30 +130,38 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
      * @throws SmackException If a network error occurs while authenticating.
      * @throws NotConnectedException 
      */
-    public void authenticate(String username, String host, String serviceName, String password)
+    public final void authenticate(String username, String host, String serviceName, String password)
                     throws SmackException, NotConnectedException {
-        authenticateInternal(username, host, serviceName, password);
+        this.authenticationId = username;
+        this.host = host;
+        this.serviceName = serviceName;
+        this.password = password;
+        authenticateInternal();
         authenticate();
     }
 
-    protected abstract void authenticateInternal(String username, String host, String serviceName, String password) throws SmackException;
+    protected void authenticateInternal() throws SmackException {
+    }
 
     /**
      * Builds and sends the <tt>auth</tt> stanza to the server. The callback handler will handle
      * any additional information, such as the authentication ID or realm, if it is needed.
      *
      * @param host     the hostname where the user account resides.
+     * @param serviceName the xmpp service location
      * @param cbh      the CallbackHandler to obtain user information.
      * @throws SmackException
      * @throws NotConnectedException 
      */
-    public void authenticate(String host, CallbackHandler cbh)
+    public void authenticate(String host,String serviceName, CallbackHandler cbh)
                     throws SmackException, NotConnectedException {
-        authenticateInternal(host, cbh);
+        this.host = host;
+        this.serviceName = serviceName;
+        authenticateInternal(cbh);
         authenticate();
     }
 
-    protected abstract void authenticateInternal(String host, CallbackHandler cbh) throws SmackException;
+    protected abstract void authenticateInternal(CallbackHandler cbh) throws SmackException;
 
     private final void authenticate() throws SmackException, NotConnectedException {
         String authenticationText = getAuthenticationText();

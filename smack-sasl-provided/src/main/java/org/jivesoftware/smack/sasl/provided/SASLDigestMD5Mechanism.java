@@ -30,35 +30,12 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
     private static final String INITAL_NONCE = "00000001";
 
     /**
-     * authcid
-     */
-    private String authenticationId;
-
-    /**
-     * The name of the XMPP service
-     */
-    private String serviceName;
-
-    /**
-     * The users password
-     */
-    private String password;
-
-    /**
      * The state of the this instance of SASL DIGEST-MD5 authentication.
      */
     private State state = State.INITIAL;
 
     @Override
-    protected void authenticateInternal(String username, String host, String serviceName,
-                    String password) throws SmackException {
-        this.authenticationId = username;
-        this.serviceName = serviceName;
-        this.password = password;
-    }
-
-    @Override
-    protected void authenticateInternal(String host, CallbackHandler cbh) throws SmackException {
+    protected void authenticateInternal(CallbackHandler cbh) throws SmackException {
         throw new UnsupportedOperationException("CallbackHandler not (yet) supported");
     }
 
@@ -140,6 +117,7 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
         case RESPONSE_SENT:
             // TODO Validate the server response. All we can do here is verifying that the server
             // knows the user's password, but thats better then nothing.
+            state = State.VALID_SERVER_RESPONSE;
             break;
          default:
              throw new IllegalStateException();
@@ -151,7 +129,6 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
         INITIAL,
         RESPONSE_SENT,
         VALID_SERVER_RESPONSE,
-        INVALID_SERVER_RESPONSE,
     }
 
     private static byte[] toBytes(String string) throws SmackException {
