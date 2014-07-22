@@ -31,11 +31,11 @@ import javax.security.auth.callback.CallbackHandler;
  *  <li>{@link #getName()} -- returns the common name of the SASL mechanism.</li>
  * </ul>
  * Subclasses will likely want to implement their own versions of these methods:
- *  <li>{@link #authenticate(XMPPConnection, String, String, String, String)} -- Initiate authentication stanza using the
+ *  <li>{@link #authenticate(String, String, String, String)} -- Initiate authentication stanza using the
  *  deprecated method.</li>
- *  <li>{@link #authenticate(XMPPConnection, String, CallbackHandler)} -- Initiate authentication stanza
+ *  <li>{@link #authenticate(String, CallbackHandler)} -- Initiate authentication stanza
  *  using the CallbackHandler method.</li>
- *  <li>{@link #challengeReceived(AbstractXMPPConnection, String)} -- Handle a challenge from the server.</li>
+ *  <li>{@link #challengeReceived(String)} -- Handle a challenge from the server.</li>
  * </ul>
  * 
  * Basic XMPP SASL authentication steps:
@@ -69,11 +69,11 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
     /**
      * Builds and sends the <tt>auth</tt> stanza to the server. Note that this method of
      * authentication is not recommended, since it is very inflexible. Use
-     * {@link #authenticate(XMPPConnection, String, CallbackHandler)} whenever possible.
+     * {@link #authenticate(String, CallbackHandler)} whenever possible.
      * 
      * Explanation of auth stanza:
      * 
-     * The client authentication stanza needs to include the digest-uri of the form: xmpp/serverName 
+     * The client authentication stanza needs to include the digest-uri of the form: xmpp/serviceName 
      * From RFC-2831: 
      * digest-uri = "digest-uri" "=" digest-uri-value
      * digest-uri-value = serv-type "/" host [ "/" serv-name ]
@@ -105,7 +105,6 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
      * 
      * digest-uri verification is needed for ejabberd 2.0.3 and higher   
      * 
-     * @param connection the used XMPPConnection
      * @param username the username of the user being authenticated.
      * @param host the hostname where the user account resides.
      * @param serviceName the xmpp service location - used by the SASL client in digest-uri creation
@@ -114,9 +113,8 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
      * @throws SmackException If a network error occurs while authenticating.
      * @throws NotConnectedException 
      */
-    public void authenticate(XMPPConnection connection, String username, String host,
-                    String serviceName, String password) throws SmackException,
-                    NotConnectedException {
+    public void authenticate(String username, String host, String serviceName, String password)
+                    throws SmackException, NotConnectedException {
         authenticateInternal(username, host, serviceName, password);
         authenticate();
     }
@@ -152,7 +150,7 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
      * The server is challenging the SASL mechanism for the stanza he just sent. Send a
      * response to the server's challenge.
      *
-     * @param challenge a base64 encoded string representing the challenge.
+     * @param challengeString a base64 encoded string representing the challenge.
      * @throws NotConnectedException
      * @throws SmackException
      */

@@ -45,6 +45,7 @@ task saslJar(type: Jar) {
 	include('org/jivesoftware/smack/sasl/**')
 	include('org/jivesoftware/smack/initializer/**')
 	include('org/jivesoftware/smack/util/StringUtils.class')
+	include('org/jivesoftware/smack/util/ByteUtils.class')
 }
 
 artifacts {

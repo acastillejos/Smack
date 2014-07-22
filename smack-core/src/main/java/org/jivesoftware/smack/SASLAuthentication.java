@@ -41,22 +41,12 @@ import java.util.Queue;
  * to the connection and establishing a session with the server.</p>
  *
  * <p>Once TLS has been negotiated (i.e. the connection has been secured) it is possible to
- * register with the server, authenticate using Non-SASL or authenticate using SASL. If the
- * server supports SASL then Smack will first try to authenticate using SASL. But if that
- * fails then Non-SASL will be tried.</p>
+ * register with the server or authenticate using SASL. If the
+ * server supports SASL then Smack will try to authenticate using SASL..</p>
  *
  * <p>The server may support many SASL mechanisms to use for authenticating. Out of the box
  * Smack provides several SASL mechanisms, but it is possible to register new SASL Mechanisms. Use
  * {@link #registerSASLMechanism(SASLMechanism)} to register a new mechanisms.
- *
- * <p>Once the user has been authenticated with SASL, it is necessary to bind a resource for
- * the connection. If no resource is passed in {@link #authenticate(String, String, String)}
- * then the server will assign a resource for the connection. In case a resource is passed
- * then the server will receive the desired resource but may assign a modified resource for
- * the connection.</p>
- *
- * <p>Once a resource has been binded and if the server supports sessions then Smack will establish
- * a session so that instant messaging and presence functionalities may be used.</p>
  *
  * @see org.jivesoftware.smack.sasl.SASLMechanism
  *
@@ -233,7 +223,7 @@ public class SASLAuthentication {
                 // the
                 // format: host ["/" serv-name ] as per RFC-2831 guidelines
                 String serviceName = connection.getServiceName();
-                currentMechanism.authenticate(connection, username, connection.getHost(), serviceName, password);
+                currentMechanism.authenticate(username, connection.getHost(), serviceName, password);
 
                 try {
                     // Wait until SASL negotiation finishes
@@ -275,11 +265,11 @@ public class SASLAuthentication {
      */
     public void authenticateAnonymously() throws SASLErrorException,
                     SmackException, XMPPErrorException {
-        currentMechanism = new SASLAnonymous();
+        currentMechanism = (new SASLAnonymous()).instanceForAuthentication(connection);
 
         // Wait until SASL negotiation finishes
         synchronized (this) {
-            currentMechanism.authenticate(connection, null, null, null, "");
+            currentMechanism.authenticate(null, null, null, "");
             try {
                 wait(connection.getPacketReplyTimeout());
             }

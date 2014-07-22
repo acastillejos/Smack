@@ -28,6 +28,7 @@ import java.util.Random;
  */
 public class StringUtils {
 
+    public static final String MD5 = "MD5";
     public static final String SHA1 = "SHA-1";
     public static final String UTF8 = "UTF-8";
 
