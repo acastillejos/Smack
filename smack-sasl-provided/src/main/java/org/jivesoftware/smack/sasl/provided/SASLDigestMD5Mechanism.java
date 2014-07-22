@@ -92,16 +92,25 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
                 throw new SmackException("Initial challenge has zero length");
             }
             String[] challengeParts = (new String(challenge)).split(",");
-            String nonce = "";
+            String nonce = null;
             for (String part : challengeParts) {
                 String[] keyValue = part.split("=");
                 String key = keyValue[0];
                 String value = keyValue[1];
                 if ("nonce".equals(key)) {
+                    if (nonce != null) {
+                        throw new SmackException("Nonce value present multiple times");
+                    }
                     nonce = value;
                 } else if ("rspauth".equals(key)) {
                     throw new SmackException("Subsequent authentication not support for " + getName());
                 }
+            }
+            if (nonce == null) {
+                // RFC 2831 2.1.1 about nonce "This directive is required and MUST appear exactly
+                // once; if not present, or if multiple instances are present, the client should
+                // abort the authentication exchange."
+                throw new SmackException("nonce value not present in initial challenge");
             }
             String digestUri = "xmpp/" + serviceName;
             // RFC 2831 2.1.2.1 defines A1, A2, KD and response-value
