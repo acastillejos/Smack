@@ -231,7 +231,6 @@ public class SASLAuthentication {
             synchronized (this) {
                 currentMechanism.authenticate(username, connection.getHost(),
                                 connection.getServiceName(), password);
-
                 try {
                     // Wait until SASL negotiation finishes
                     wait(connection.getPacketReplyTimeout());
@@ -239,7 +238,6 @@ public class SASLAuthentication {
                 catch (InterruptedException e) {
                     // Ignore
                 }
-
             }
 
             if (saslFailure != null) {
