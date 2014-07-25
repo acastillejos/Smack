@@ -23,8 +23,10 @@ package org.jivesoftware.smack.sasl.javax;
  */
 public class SASLPlainMechanism extends SASLJavaXMechanism {
 
+    public static final String NAME = PLAIN;
+
     public String getName() {
-        return "PLAIN";
+        return NAME;
     }
 
     @Override

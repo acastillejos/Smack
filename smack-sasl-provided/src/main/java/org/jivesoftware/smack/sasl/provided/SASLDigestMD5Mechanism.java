@@ -27,6 +27,8 @@ import org.jivesoftware.smack.util.StringUtils;
 
 public class SASLDigestMD5Mechanism extends SASLMechanism {
 
+    public static final String NAME = DIGESTMD5;
+
     private static final String INITAL_NONCE = "00000001";
 
     /**
@@ -47,7 +49,7 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
 
     @Override
     public String getName() {
-        return "DIGEST-MD5";
+        return NAME;
     }
 
     @Override

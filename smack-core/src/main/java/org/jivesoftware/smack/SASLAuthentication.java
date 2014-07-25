@@ -31,10 +31,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * <p>This class is responsible authenticating the user using SASL, binding the resource
@@ -57,6 +59,7 @@ public class SASLAuthentication {
 
     private static final Queue<SASLMechanism> REGISTERED_MECHANISMS = new PriorityQueue<SASLMechanism>();
 
+    private static final Set<String> BLACKLISTED_MECHANISMS = new HashSet<String>();
 
     /**
      * Registers a new SASL mechanism
@@ -97,6 +100,24 @@ public class SASLAuthentication {
             }
         }
         return false;
+    }
+
+    public static boolean blacklistSASLMechanism(String mechansim) {
+        synchronized(BLACKLISTED_MECHANISMS) {
+            return BLACKLISTED_MECHANISMS.add(mechansim);
+        }
+    }
+
+    public static boolean unBlacklistSASLMechanism(String mechanism) {
+        synchronized(BLACKLISTED_MECHANISMS) {
+            return BLACKLISTED_MECHANISMS.remove(mechanism);
+        }
+    }
+
+    public static Set<String> getBlacklistedSASLMechanisms() {
+        synchronized(BLACKLISTED_MECHANISMS) {
+            return new HashSet<String>(BLACKLISTED_MECHANISMS);
+        }
     }
 
     private final AbstractXMPPConnection connection;
@@ -153,18 +174,7 @@ public class SASLAuthentication {
      */
     public void authenticate(String resource, CallbackHandler cbh) throws IOException,
                     XMPPErrorException, SASLErrorException, SmackException {
-        // Locate the SASLMechanism to use
-        SASLMechanism selectedMechanism = null;
-        Iterator<SASLMechanism> it = REGISTERED_MECHANISMS.iterator();
-        // Iterate in SASL Priority order over registered mechanisms
-        while (it.hasNext()) {
-            SASLMechanism mechanism = it.next();
-            if (serverMechanisms.contains(mechanism.getName())) {
-                // Create a new instance of the SASLMechanism for every authentication attempt.
-                selectedMechanism = mechanism.instanceForAuthentication(connection);
-                break;
-            }
-        }
+        SASLMechanism selectedMechanism = selectMechanism();
         if (selectedMechanism != null) {
             currentMechanism = selectedMechanism;
             synchronized (this) {
@@ -213,18 +223,7 @@ public class SASLAuthentication {
     public void authenticate(String username, String password, String resource)
                     throws XMPPErrorException, SASLErrorException, IOException,
                     SmackException {
-        // Locate the SASLMechanism to use
-        SASLMechanism selectedMechanism = null;
-        Iterator<SASLMechanism> it = REGISTERED_MECHANISMS.iterator();
-        // Iterate in SASL Priority order over registered mechanisms
-        while (it.hasNext()) {
-            SASLMechanism mechanism = it.next();
-            if (serverMechanisms.contains(mechanism.getName())) {
-                // Create a new instance of the SASLMechanism for every authentication attempt.
-                selectedMechanism = mechanism.instanceForAuthentication(connection);
-                break;
-            }
-        }
+        SASLMechanism selectedMechanism = selectMechanism();
         if (selectedMechanism != null) {
             currentMechanism = selectedMechanism;
 
@@ -356,5 +355,27 @@ public class SASLAuthentication {
     protected void init() {
         saslNegotiated = false;
         saslFailure = null;
+    }
+
+    private SASLMechanism selectMechanism() {
+        // Locate the SASLMechanism to use
+        SASLMechanism selectedMechanism = null;
+        Iterator<SASLMechanism> it = REGISTERED_MECHANISMS.iterator();
+        // Iterate in SASL Priority order over registered mechanisms
+        while (it.hasNext()) {
+            SASLMechanism mechanism = it.next();
+            String mechanismName = mechanism.getName();
+            synchronized (BLACKLISTED_MECHANISMS) {
+                if (BLACKLISTED_MECHANISMS.contains(mechanismName)) {
+                    continue;
+                }
+            }
+            if (serverMechanisms.contains(mechanismName)) {
+                // Create a new instance of the SASLMechanism for every authentication attempt.
+                selectedMechanism = mechanism.instanceForAuthentication(connection);
+                break;
+            }
+        }
+        return selectedMechanism;
     }
 }

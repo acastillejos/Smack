@@ -27,6 +27,8 @@ import javax.security.sasl.Sasl;
  */
 public class SASLGSSAPIMechanism extends SASLJavaXMechanism {
 
+    public static final String NAME = GSSAPI;
+
     static {
         System.setProperty("javax.security.auth.useSubjectCredsOnly","false");
         System.setProperty("java.security.auth.login.config","gss.conf");
@@ -34,7 +36,7 @@ public class SASLGSSAPIMechanism extends SASLJavaXMechanism {
 
     @Override
     public String getName() {
-        return "GSSAPI";
+        return NAME;
     }
 
     @Override

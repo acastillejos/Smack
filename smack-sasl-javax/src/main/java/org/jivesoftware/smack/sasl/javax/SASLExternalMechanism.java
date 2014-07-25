@@ -44,9 +44,11 @@ package org.jivesoftware.smack.sasl.javax;
  */
 public class SASLExternalMechanism extends SASLJavaXMechanism  {
 
+    public static final String NAME = EXTERNAL;
+
     @Override
     public String getName() {
-        return "EXTERNAL";
+        return EXTERNAL;
     }
 
     @Override

@@ -23,8 +23,10 @@ package org.jivesoftware.smack.sasl.javax;
  */
 public class SASLDigestMD5Mechanism extends SASLJavaXMechanism {
 
+    public static final String NAME = DIGESTMD5;
+
     public String getName() {
-        return "DIGEST-MD5";
+        return NAME;
     }
 
     @Override

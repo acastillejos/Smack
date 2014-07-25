@@ -64,8 +64,13 @@ import javax.security.auth.callback.CallbackHandler;
  */
 public abstract class SASLMechanism implements Comparable<SASLMechanism> {
 
-    protected XMPPConnection connection;
+    public static final String CRAMMD5 = "CRAM-MD5";
+    public static final String DIGESTMD5 = "DIGEST-MD5";
+    public static final String EXTERNAL = "EXTERNAL";
+    public static final String GSSAPI = "GSSAPI";
+    public static final String PLAIN = "PLAIN";
 
+    protected XMPPConnection connection;
 
     /**
      * authcid
