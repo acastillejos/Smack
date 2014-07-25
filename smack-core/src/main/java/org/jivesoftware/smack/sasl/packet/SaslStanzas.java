@@ -29,7 +29,7 @@ public class SaslStanzas {
      */
     public static class AuthMechanism extends Packet {
         public static final String ELEMENT = "auth";
-                        
+
         private final String mechanism;
         private final String authenticationText;
 
@@ -50,7 +50,7 @@ public class SaslStanzas {
             return xml;
         }
     }
-    
+
     /**
      * A SASL challenge stanza.
      */
@@ -65,13 +65,13 @@ public class SaslStanzas {
 
         @Override
         public XmlStringBuilder toXML() {
-            XmlStringBuilder xml = new XmlStringBuilder().halfOpenElement(ELEMENT).xmlnsAttribute(NAMESPACE).rightAngelBracket();
+            XmlStringBuilder xml = new XmlStringBuilder().halfOpenElement(ELEMENT).xmlnsAttribute(
+                            NAMESPACE).rightAngelBracket();
             xml.optAppend(data);
             xml.closeElement(ELEMENT);
             return xml;
         }
     }
-    
 
     /**
      * A SASL response stanza.
@@ -133,9 +133,11 @@ public class SaslStanzas {
         public SASLFailure(String saslError) {
             SASLError error = SASLError.fromString(saslError);
             if (error == null) {
-                // RFC6120 6.5 states that unknown condition must be treat as generic authentication failure.
+                // RFC6120 6.5 states that unknown condition must be treat as generic authentication
+                // failure.
                 this.saslError = SASLError.not_authorized;
-            } else {
+            }
+            else {
                 this.saslError = error;
             }
             this.saslErrorString = saslError;
@@ -151,7 +153,6 @@ public class SaslStanzas {
         }
 
         /**
-         * 
          * @return the SASL error as String
          */
         public String getSASLErrorString() {
