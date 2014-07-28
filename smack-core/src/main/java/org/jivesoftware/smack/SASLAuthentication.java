@@ -30,12 +30,12 @@ import javax.security.auth.callback.CallbackHandler;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -57,7 +57,7 @@ import java.util.Set;
  */
 public class SASLAuthentication {
 
-    private static final Queue<SASLMechanism> REGISTERED_MECHANISMS = new PriorityQueue<SASLMechanism>();
+    private static final List<SASLMechanism> REGISTERED_MECHANISMS = new ArrayList<SASLMechanism>();
 
     private static final Set<String> BLACKLISTED_MECHANISMS = new HashSet<String>();
 
@@ -66,8 +66,11 @@ public class SASLAuthentication {
      *
      * @param mechanism a SASLMechanism subclass.
      */
-    public static synchronized void registerSASLMechanism(SASLMechanism mechanism)  {
-        REGISTERED_MECHANISMS.add(mechanism);
+    public static void registerSASLMechanism(SASLMechanism mechanism) {
+        synchronized (REGISTERED_MECHANISMS) {
+            REGISTERED_MECHANISMS.add(mechanism);
+            Collections.sort(REGISTERED_MECHANISMS);
+        }
     }
 
     /**
@@ -75,10 +78,12 @@ public class SASLAuthentication {
      *
      * @return the registered SASLMechanism sorted by the level of preference.
      */
-    public static synchronized Map<String, String> getRegisterdSASLMechanisms() {
-        Map<String, String> answer = new HashMap<String,String>();
-        for (SASLMechanism mechanism : REGISTERED_MECHANISMS) {
-            answer.put(mechanism.getClass().getName(), mechanism.getName());
+    public static Map<String, String> getRegisterdSASLMechanisms() {
+        Map<String, String> answer = new HashMap<String, String>();
+        synchronized (REGISTERED_MECHANISMS) {
+            for (SASLMechanism mechanism : REGISTERED_MECHANISMS) {
+                answer.put(mechanism.getClass().getName(), mechanism.getName());
+            }
         }
         return answer;
     }
@@ -90,13 +95,15 @@ public class SASLAuthentication {
      * @param clazz the SASLMechanism class's name
      * @return true if the given SASLMechanism was removed, false otherwise
      */
-    public static synchronized boolean unregisterSASLMechanism(String clazz) {
-        Iterator<SASLMechanism> it = REGISTERED_MECHANISMS.iterator();
-        while (it.hasNext()) {
-            SASLMechanism mechanism = it.next();
-            if (mechanism.getClass().getName().equals(clazz)) {
-                it.remove();
-                return true;
+    public static boolean unregisterSASLMechanism(String clazz) {
+        synchronized (REGISTERED_MECHANISMS) {
+            Iterator<SASLMechanism> it = REGISTERED_MECHANISMS.iterator();
+            while (it.hasNext()) {
+                SASLMechanism mechanism = it.next();
+                if (mechanism.getClass().getName().equals(clazz)) {
+                    it.remove();
+                    return true;
+                }
             }
         }
         return false;
