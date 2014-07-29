@@ -215,10 +215,13 @@ public class StringUtils {
      */
     public static byte[] decodeBase64(String data) {
         byte[] bytes = toBytes(data);
-        bytes = Base64.decode(bytes, 0, bytes.length, Base64.NO_OPTIONS);
-        return bytes;
+        return decodeBase64(bytes);
     }
 
+    public static byte[] decodeBase64(byte[] data) {
+        return Base64.decode(data, 0, data.length, Base64.NO_OPTIONS);
+    }
+ 
     /**
      * Pseudo-random number generator object for use with randomString().
      * The Random class is not considered to be cryptographically secure, so

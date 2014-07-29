@@ -4,4 +4,5 @@ Use Smack provided code for SASL."""
 
 dependencies {
 	compile project(path: ':smack-core', configuration: 'sasl')
+	testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 }

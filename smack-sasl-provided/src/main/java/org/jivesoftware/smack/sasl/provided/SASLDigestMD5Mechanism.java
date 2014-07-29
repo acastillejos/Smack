@@ -80,8 +80,15 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
                         throw new SmackException("Nonce value present multiple times");
                     }
                     nonce = value.replace("\"", "");
-                } else if ("rspauth".equals(key)) {
-                    throw new SmackException("Subsequent authentication not support for " + getName());
+                } else if ("charset".equals(key)) {
+                    if (!value.equals("utf-8")) {
+                        System.err.println("Unsupported charset");
+                    }
+                }
+                else if ("qop".equals(key)) {
+                    if (!value.equals("auth")) {
+                        System.err.println("Unsupported qop operation");
+                    }
                 }
             }
             if (nonce == null) {
@@ -90,16 +97,16 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
                 // abort the authentication exchange."
                 throw new SmackException("nonce value not present in initial challenge");
             }
-            String digestUri = "xmpp/" + serviceName;
             // RFC 2831 2.1.2.1 defines A1, A2, KD and response-value
             byte[] a1FirstPart = ByteUtils.md5(toBytes(authenticationId + ':' + serviceName + ':' + password));
             String cnonce = StringUtils.randomString(32);
             byte[] a1 = ByteUtils.concact(a1FirstPart, toBytes(':' + nonce + ':' + cnonce));
+            String digestUri = "xmpp/" + serviceName;
             byte[] a2 = toBytes("AUTHENTICATE:" + digestUri);
-            String ha1 = StringUtils.encodeHex(ByteUtils.md5(a1));
-            String ha2 = StringUtils.encodeHex(ByteUtils.md5(a2));
-            String kd = ha1 + ':' + nonce + ':' + INITAL_NONCE + ':' + cnonce + ":auth:" + ha2;
-            String responseValue = StringUtils.encodeHex(ByteUtils.md5(toBytes(kd)));
+            String hex_hashed_a1 = StringUtils.encodeHex(ByteUtils.md5(a1));
+            String hex_hashed_a2 = StringUtils.encodeHex(ByteUtils.md5(a2));
+            byte[] kd = ByteUtils.md5(toBytes(hex_hashed_a1 + ':' + nonce + ':' + INITAL_NONCE + ':' + cnonce + ":auth:" + hex_hashed_a2));
+            String responseValue = StringUtils.encodeHex(kd);
             // @formatter:off
             // See RFC 2831 2.1.2 digest-response
             String saslString = "username=\"" + authenticationId + '"'
@@ -112,7 +119,7 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
                                + ",response=" + responseValue
                                + ",charset=utf-8";
             // @formatter:on
-            response = toBytes(StringUtils.encodeBase64(saslString));
+            response = toBytes(saslString);
             state = State.RESPONSE_SENT;
             break;
         case RESPONSE_SENT:

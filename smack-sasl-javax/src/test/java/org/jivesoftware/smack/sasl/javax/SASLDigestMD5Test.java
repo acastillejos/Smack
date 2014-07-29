@@ -1,6 +1,6 @@
 /**
  *
- * Copyright © 2014 Florian Schmaus
+ * Copyright 2014 Florian Schmaus
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jivesoftware.smack.sasl;
+package org.jivesoftware.smack.sasl.javax;
 
-import org.jivesoftware.smack.DummyConnection;
-import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.SmackException.NotConnectedException;
+import org.jivesoftware.smack.sasl.DigestMd5SaslTest;
+import org.junit.Test;
 
-public class AbstractSaslTest {
+public class SASLDigestMD5Test {
 
-    protected final XMPPConnection xmppConnection = new DummyConnection();
-    protected final SASLMechanism saslMechanism;
-
-    protected AbstractSaslTest(SASLMechanism saslMechanism) {
-        this.saslMechanism = saslMechanism.instanceForAuthentication(xmppConnection);
+    @Test
+    public void testDigestMD5() throws NotConnectedException, SmackException {
+        DigestMd5SaslTest test = new DigestMd5SaslTest(new SASLDigestMD5Mechanism());
+        String response = test.runTest();
     }
-
 }
