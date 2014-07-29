@@ -38,6 +38,8 @@ public class StringUtils {
     public static final String LT_ENCODE = "&lt;";
     public static final String GT_ENCODE = "&gt;";
 
+    public static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+
     /**
      * Escapes all necessary characters in the String so that it can be used
      * in an XML doc.
@@ -148,16 +150,13 @@ public class StringUtils {
      * @return generated hex string.
      */
     public static String encodeHex(byte[] bytes) {
-        StringBuilder hex = new StringBuilder(bytes.length * 2);
-
-        for (byte aByte : bytes) {
-            if (((int) aByte & 0xff) < 0x10) {
-                hex.append("0");
-            }
-            hex.append(Integer.toString((int) aByte & 0xff, 16));
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_CHARS[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_CHARS[v & 0x0F];
         }
-
-        return hex.toString();
+        return new String(hexChars);
     }
 
     /**

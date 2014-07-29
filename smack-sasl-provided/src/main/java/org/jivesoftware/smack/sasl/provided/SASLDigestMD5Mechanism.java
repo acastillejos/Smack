@@ -103,6 +103,7 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
             String kd = ha1 + ':' + nonce + ':' + INITAL_NONCE + ':' + cnonce + ":auth:" + ha2;
             String responseValue = StringUtils.encodeHex(ByteUtils.md5(toBytes(kd)));
             // @formatter:off
+            // See RFC 2831 2.1.2 digest-response
             String saslString = "username=\"" + authenticationId + '"'
                                + ",realm=\"" + serviceName + '"'
                                + ",nonce=\"" + nonce + '"'
@@ -111,7 +112,7 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
                                + ",qop=auth"
                                + ",digest-uri=\"" + digestUri + '"'
                                + ",response=" + responseValue
-                               + ",charset=utf8";
+                               + ",charset=utf-8";
             // @formatter:on
             response = toBytes(StringUtils.encodeBase64(saslString));
             state = State.RESPONSE_SENT;
