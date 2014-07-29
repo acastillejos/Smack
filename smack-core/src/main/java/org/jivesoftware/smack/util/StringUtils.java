@@ -132,14 +132,7 @@ public class StringUtils {
             }
         }
         // Now, compute hash.
-        try {
-            digest.update(data.getBytes(UTF8));
-        }
-        catch (UnsupportedEncodingException e) {
-            // Smack wont be able to function normally if this exception is thrown, wrap it into an
-            // ISE and make the user aware of the problem.
-            throw new IllegalStateException(e);
-        }
+        digest.update(toBytes(data));
         return encodeHex(digest.digest());
     }
 
@@ -159,6 +152,15 @@ public class StringUtils {
         return new String(hexChars);
     }
 
+    public static byte[] toBytes(String string) {
+        try {
+            return string.getBytes(StringUtils.UTF8);
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UTF-8 encoding not supported by platform", e);
+        }
+    }
+
     /**
      * Encodes a String as a base64 String.
      *
@@ -166,13 +168,7 @@ public class StringUtils {
      * @return a base64 encoded String.
      */
     public static String encodeBase64(String data) {
-        byte [] bytes = null;
-        try {
-            bytes = data.getBytes("ISO-8859-1");
-        }
-        catch (UnsupportedEncodingException uee) {
-            throw new IllegalStateException(uee);
-        }
+        byte [] bytes = toBytes(data);
         return encodeBase64(bytes);
     }
 
@@ -218,13 +214,7 @@ public class StringUtils {
      * @return the decoded String.
      */
     public static byte[] decodeBase64(String data) {
-        byte[] bytes;
-        try {
-            bytes = data.getBytes("UTF-8");
-        } catch (java.io.UnsupportedEncodingException uee) {
-            bytes = data.getBytes();
-        }
-
+        byte[] bytes = toBytes(data);
         bytes = Base64.decode(bytes, 0, bytes.length, Base64.NO_OPTIONS);
         return bytes;
     }

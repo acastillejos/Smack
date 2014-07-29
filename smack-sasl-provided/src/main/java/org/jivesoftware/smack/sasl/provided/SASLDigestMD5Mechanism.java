@@ -16,8 +16,6 @@
  */
 package org.jivesoftware.smack.sasl.provided;
 
-import java.io.UnsupportedEncodingException;
-
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jivesoftware.smack.SmackException;
@@ -81,7 +79,7 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
                     if (nonce != null) {
                         throw new SmackException("Nonce value present multiple times");
                     }
-                    nonce = value;
+                    nonce = value.replace("\"", "");
                 } else if ("rspauth".equals(key)) {
                     throw new SmackException("Subsequent authentication not support for " + getName());
                 }
@@ -134,12 +132,7 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
         VALID_SERVER_RESPONSE,
     }
 
-    private static byte[] toBytes(String string) throws SmackException {
-        try {
-            return string.getBytes(StringUtils.UTF8);
-        }
-        catch (UnsupportedEncodingException e) {
-            throw new SmackException("UTF-8 encoding not supported by platform", e);
-        }
+    private static byte[] toBytes(String string) {
+        return StringUtils.toBytes(string);
     }
 }
