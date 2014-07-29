@@ -103,14 +103,14 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
             String kd = ha1 + ':' + nonce + ':' + INITAL_NONCE + ':' + cnonce + ":auth:" + ha2;
             String responseValue = StringUtils.encodeHex(ByteUtils.md5(toBytes(kd)));
             // @formatter:off
-            String saslString = "username=\"" + authenticationId
-                               + "\",realm=\"" + serviceName
-                               + "\",nonce=\"" + nonce
-                               + "\",cnonce=\"" + cnonce
-                               + "\",nc=" + INITAL_NONCE
+            String saslString = "username=\"" + authenticationId + '"'
+                               + ",realm=\"" + serviceName + '"'
+                               + ",nonce=\"" + nonce + '"'
+                               + ",cnonce=\"" + cnonce + '"'
+                               + ",nc=" + INITAL_NONCE
                                + ",qop=auth"
-                               + "digest-uri=\"" + digestUri
-                               + "\",response=" + responseValue
+                               + ",digest-uri=\"" + digestUri + '"'
+                               + ",response=" + responseValue
                                + ",charset=utf8";
             // @formatter:on
             response = toBytes(StringUtils.encodeBase64(saslString));

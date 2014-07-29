@@ -41,9 +41,8 @@ public class ByteUtils {
     public static byte[] concact(byte[] arrayOne, byte[] arrayTwo) {
         int combinedLength = arrayOne.length + arrayTwo.length;
         byte[] res = new byte[combinedLength];
-        for (int i = 0; i < combinedLength; i++) {
-            res[i] = i < arrayOne.length ? arrayOne[i] : arrayTwo[i - arrayOne.length];
-        }
+        System.arraycopy(arrayOne, 0, res, 0, arrayOne.length);
+        System.arraycopy(arrayTwo, 0, res, arrayOne.length, arrayTwo.length);
         return res;
     }
 }
