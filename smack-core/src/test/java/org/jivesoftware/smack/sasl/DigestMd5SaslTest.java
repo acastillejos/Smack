@@ -16,6 +16,12 @@
  */
 package org.jivesoftware.smack.sasl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.util.StringUtils;
@@ -29,10 +35,27 @@ public class DigestMd5SaslTest extends AbstractSaslTest {
         super(saslMechanism);
     }
 
-    public String runTest() throws NotConnectedException, SmackException {
+    protected void runTest() throws NotConnectedException, SmackException {
         saslMechanism.authenticate("florian", "irrelevant", "xmpp.org", "secret");
 
         byte[] response = saslMechanism.evaluateChallenge(challengeBytes);
-        return new String(response);
+        String responseString = new String(response);
+        String[] responseParts = responseString.split(",");
+        Map<String, String> responsePairs = new HashMap<String, String>();
+        for (String part : responseParts) {
+            String[] keyValue = part.split("=");
+            assertTrue(keyValue.length == 2);
+            String key = keyValue[0];
+            String value = keyValue[1].replace("\"", "");
+            responsePairs.put(key, value);
+        }
+        assertMapValue("username", "florian", responsePairs);
+        assertMapValue("realm", "xmpp.org", responsePairs);
+        assertMapValue("digest-uri", "xmpp/xmpp.org", responsePairs);
+        assertMapValue("qop", "auth", responsePairs);
+    }
+
+    private static void assertMapValue(String key, String value, Map<String, String> map) {
+        assertEquals(map.get(key), value);
     }
 }

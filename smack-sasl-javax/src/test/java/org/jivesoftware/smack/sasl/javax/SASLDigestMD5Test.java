@@ -21,11 +21,14 @@ import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.sasl.DigestMd5SaslTest;
 import org.junit.Test;
 
-public class SASLDigestMD5Test {
+public class SASLDigestMD5Test extends DigestMd5SaslTest {
+
+    public SASLDigestMD5Test() {
+        super(new SASLDigestMD5Mechanism());
+    }
 
     @Test
     public void testDigestMD5() throws NotConnectedException, SmackException {
-        DigestMd5SaslTest test = new DigestMd5SaslTest(new SASLDigestMD5Mechanism());
-        String response = test.runTest();
+        runTest();
     }
 }
