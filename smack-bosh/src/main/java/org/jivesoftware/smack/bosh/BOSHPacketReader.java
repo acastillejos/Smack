@@ -97,8 +97,9 @@ public class BOSHPacketReader implements BOSHClientResponseListener {
                                             BodyQName.create(XMPPBOSHConnection.BOSH_URI, "to"),
                                             connection.getServiceName())
                                     .build());
-                            connection.getSASLAuthentication().authenticated();
-                            connection.processPacket(new Success(parser.nextText()));
+                            Success success = new Success(parser.nextText());
+                            connection.getSASLAuthentication().authenticated(success);
+                            connection.processPacket(success);
                         } else if (parser.getName().equals("features")) {
                             parseFeatures(parser);
                         } else if (parser.getName().equals("failure")) {

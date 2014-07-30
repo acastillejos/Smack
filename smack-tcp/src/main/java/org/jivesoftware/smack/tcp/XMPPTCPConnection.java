@@ -1062,7 +1062,8 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             getSASLAuthentication().challengeReceived(challengeData);
                         }
                         else if (name.equals("success")) {
-                            processPacket(new Success(parser.nextText()));
+                            Success success = new Success(parser.nextText());
+                            processPacket(success);
                             // We now need to bind a resource for the connection
                             // Open a new stream and wait for the response
                             packetWriter.openStream();
@@ -1071,7 +1072,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             resetParser();
                             // The SASL authentication with the server was successful. The next step
                             // will be to bind the resource
-                            getSASLAuthentication().authenticated();
+                            getSASLAuthentication().authenticated(success);
                         }
                         else if (name.equals("compressed")) {
                             // Server confirmed that it's possible to use stream compression. Start

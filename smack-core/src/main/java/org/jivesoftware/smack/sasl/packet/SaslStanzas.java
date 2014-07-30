@@ -107,8 +107,23 @@ public class SaslStanzas {
 
         final private String data;
 
+        /**
+         * Construct a new SASL success stanza with optional additional data for the SASL layer
+         * (RFC6120 6.3.10)
+         * 
+         * @param data additional data for the SASL layer or <code>null</code>
+         */
         public Success(String data) {
             this.data = StringUtils.returnIfNotEmptyTrimmed(data);
+        }
+
+        /**
+         * Returns additional data for the SASL layer or <code>null</code>.
+         * 
+         * @return additional data or <code>null</code>
+         */
+        public String getData() {
+            return data;
         }
 
         @Override

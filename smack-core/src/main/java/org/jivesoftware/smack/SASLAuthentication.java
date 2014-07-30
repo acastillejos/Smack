@@ -24,6 +24,7 @@ import org.jivesoftware.smack.sasl.SASLAnonymous;
 import org.jivesoftware.smack.sasl.SASLErrorException;
 import org.jivesoftware.smack.sasl.SASLMechanism;
 import org.jivesoftware.smack.sasl.packet.SaslStanzas.SASLFailure;
+import org.jivesoftware.smack.sasl.packet.SaslStanzas.Success;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -314,7 +315,7 @@ public class SASLAuthentication {
 
     /**
      * The server is challenging the SASL authentication we just sent. Forward the challenge
-     * to the current SASLMechanism we are using. The SASLMechanism will send a response to
+     * to the current SASLMechanism we are using. The SASLMechanism will eventually send a response to
      * the server. The length of the challenge-response sequence varies according to the
      * SASLMechanism in use.
      *
@@ -329,8 +330,18 @@ public class SASLAuthentication {
     /**
      * Notification message saying that SASL authentication was successful. The next step
      * would be to bind the resource.
+     * @throws Exception 
+     * @throws NotConnectedException 
      */
-    public void authenticated() {
+    public void authenticated(Success success) throws NotConnectedException, Exception {
+        // RFC6120 6.3.10 "At the end of the authentication exchange, the SASL server (the XMPP
+        // "receiving entity") can include "additional data with success" if appropriate for the
+        // SASL mechanism in use. In XMPP, this is done by including the additional data as the XML
+        // character data of the <success/> element." The used SASL mechanism should be able to
+        // verify the data send by the server in the success stanza, if any.
+        if (success.getData() != null) {
+            challengeReceived(success.getData());
+        }
         saslNegotiated = true;
         // Wake up the thread that is waiting in the #authenticate method
         synchronized (this) {
