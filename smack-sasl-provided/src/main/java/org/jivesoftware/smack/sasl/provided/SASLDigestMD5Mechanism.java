@@ -40,7 +40,7 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
         VALID_SERVER_RESPONSE,
     }
 
-    private static boolean verifyServerResponse = false;
+    private static boolean verifyServerResponse = true;
 
     public static void setVerifyServerResponse(boolean verifyServerResponse) {
         SASLDigestMD5Mechanism.verifyServerResponse = verifyServerResponse;
@@ -184,8 +184,9 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
                     String digestUri, DigestType digestType) {
         StringBuilder a2 = new StringBuilder();
         if (digestType == DigestType.ClientResponse) {
-            a2.append("AUTHENTICATE:");
+            a2.append("AUTHENTICATE");
         }
+        a2.append(':');
         a2.append(digestUri);
         String hex_hashed_a2 = StringUtils.encodeHex(ByteUtils.md5(toBytes(a2.toString())));
 
