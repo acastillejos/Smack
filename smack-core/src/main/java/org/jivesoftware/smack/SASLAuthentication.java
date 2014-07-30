@@ -324,7 +324,15 @@ public class SASLAuthentication {
      * @throws NotConnectedException 
      */
     public void challengeReceived(String challenge) throws Exception, NotConnectedException {
-        currentMechanism.challengeReceived(challenge);
+        try {
+            currentMechanism.challengeReceived(challenge);
+        } catch (Exception e) {
+            // Notify the thread waiting in authenticate that an exception was encountered while doing SASL auth
+            synchronized (this) {
+                notify();
+            }
+            throw e;
+        }
     }
 
     /**
