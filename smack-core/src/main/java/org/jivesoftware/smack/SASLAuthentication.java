@@ -18,7 +18,6 @@
 package org.jivesoftware.smack;
 
 import org.jivesoftware.smack.SmackException.NoResponseException;
-import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPException.XMPPErrorException;
 import org.jivesoftware.smack.sasl.SASLAnonymous;
 import org.jivesoftware.smack.sasl.SASLErrorException;
@@ -138,9 +137,9 @@ public class SASLAuthentication {
     private boolean saslNegotiated;
 
     /**
-     * The SASL related error condition if there was one provided by the server.
+     * Either of type {@link SmackException} or {@link SASLErrorException}
      */
-    private SASLFailure saslFailure;
+    private Exception saslException;
 
     SASLAuthentication(AbstractXMPPConnection connection) {
         this.connection = connection;
@@ -196,11 +195,7 @@ public class SASLAuthentication {
                 }
             }
 
-            if (saslFailure != null) {
-                // SASL authentication failed and the server may have closed the connection
-                // so throw an exception
-                throw new SASLErrorException(selectedMechanism.getName(), saslFailure);
-            }
+            maybeThrowException();
 
             if (!saslNegotiated) {
                 throw new NoResponseException();
@@ -247,11 +242,7 @@ public class SASLAuthentication {
                 }
             }
 
-            if (saslFailure != null) {
-                // SASL authentication failed and the server may have closed the connection
-                // so throw an exception
-                throw new SASLErrorException(selectedMechanism.getName(), saslFailure);
-            }
+            maybeThrowException();
 
             if (!saslNegotiated) {
                 throw new NoResponseException();
@@ -290,17 +281,24 @@ public class SASLAuthentication {
             }
         }
 
-        if (saslFailure != null) {
-            // SASL authentication failed and the server may have closed the connection
-            // so throw an exception
-            throw new SASLErrorException(currentMechanism.toString(), saslFailure);
-        }
+        maybeThrowException();
 
         if (!saslNegotiated) {
             throw new NoResponseException();
         }
     }
 
+    private void maybeThrowException() throws SmackException, SASLErrorException {
+        if (saslException != null){
+            if (saslException instanceof SmackException) {
+                throw (SmackException) saslException;
+            } else if (saslException instanceof SASLErrorException) {
+                throw (SASLErrorException) saslException;
+            } else {
+                throw new IllegalStateException("Unexpected exception type" , saslException);
+            }
+        }
+    }
     /**
      * Sets the available SASL mechanism reported by the server. The server will report the
      * available SASL mechanism once the TLS negotiation was successful. This information is
@@ -320,17 +318,13 @@ public class SASLAuthentication {
      * SASLMechanism in use.
      *
      * @param challenge a base64 encoded string representing the challenge.
-     * @throws Exception
-     * @throws NotConnectedException 
+     * @throws SmackException
      */
-    public void challengeReceived(String challenge) throws Exception, NotConnectedException {
+    public void challengeReceived(String challenge) throws SmackException {
         try {
             currentMechanism.challengeReceived(challenge);
-        } catch (Exception e) {
-            // Notify the thread waiting in authenticate that an exception was encountered while doing SASL auth
-            synchronized (this) {
-                notify();
-            }
+        } catch (SmackException e) {
+            authenticationFailed(e);
             throw e;
         }
     }
@@ -338,10 +332,9 @@ public class SASLAuthentication {
     /**
      * Notification message saying that SASL authentication was successful. The next step
      * would be to bind the resource.
-     * @throws Exception 
-     * @throws NotConnectedException 
+     * @throws SmackException 
      */
-    public void authenticated(Success success) throws NotConnectedException, Exception {
+    public void authenticated(Success success) throws SmackException {
         // RFC6120 6.3.10 "At the end of the authentication exchange, the SASL server (the XMPP
         // "receiving entity") can include "additional data with success" if appropriate for the
         // SASL mechanism in use. In XMPP, this is done by including the additional data as the XML
@@ -365,14 +358,17 @@ public class SASLAuthentication {
      * @see <a href="https://tools.ietf.org/html/rfc6120#section-6.5">RFC6120 6.5</a>
      */
     public void authenticationFailed(SASLFailure saslFailure) {
-        this.saslFailure = saslFailure;
+        authenticationFailed(new SASLErrorException(currentMechanism.getName(), saslFailure));
+    }
+
+    public void authenticationFailed(Exception exception) {
+        saslException = exception;
         // Wake up the thread that is waiting in the #authenticate method
         synchronized (this) {
             notify();
         }
     }
 
-    
     /**
      * Initializes the internal state in order to be able to be reused. The authentication
      * is used by the connection at the first login and then reused after the connection
@@ -380,7 +376,7 @@ public class SASLAuthentication {
      */
     protected void init() {
         saslNegotiated = false;
-        saslFailure = null;
+        saslException = null;
     }
 
     private SASLMechanism selectMechanism() {
