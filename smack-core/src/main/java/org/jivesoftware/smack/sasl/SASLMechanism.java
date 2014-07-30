@@ -35,7 +35,7 @@ import javax.security.auth.callback.CallbackHandler;
  *  deprecated method.</li>
  *  <li>{@link #authenticate(String, String, CallbackHandler)} -- Initiate authentication stanza
  *  using the CallbackHandler method.</li>
- *  <li>{@link #challengeReceived(String)} -- Handle a challenge from the server.</li>
+ *  <li>{@link #challengeReceived(String, boolean)} -- Handle a challenge from the server.</li>
  * </ul>
  * 
  * Basic XMPP SASL authentication steps:
@@ -181,12 +181,16 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
      * response to the server's challenge.
      *
      * @param challengeString a base64 encoded string representing the challenge.
+     * @param finalChallenge true if this is the last challenge send by the server within the success stanza
      * @throws NotConnectedException
      * @throws SmackException
      */
-    public final void challengeReceived(String challengeString) throws SmackException, NotConnectedException {
+    public final void challengeReceived(String challengeString, boolean finalChallenge) throws SmackException, NotConnectedException {
         byte[] challenge = StringUtils.decodeBase64(challengeString);
         byte response[] = evaluateChallenge(challenge);
+        if (finalChallenge) {
+            return;
+        }
 
         Response responseStanza;
         if (response == null) {

@@ -102,14 +102,10 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
                     }
                     nonce = value.replace("\"", "");
                 }
-                else if ("charset".equals(key)) {
-                    if (!value.equals("utf-8")) {
-                        System.err.println("Unsupported charset");
-                    }
-                }
                 else if ("qop".equals(key)) {
+                    value = value.replace("\"", "");
                     if (!value.equals("auth")) {
-                        System.err.println("Unsupported qop operation");
+                        throw new SmackException("Unsupported qop operation: " + value);
                     }
                 }
             }
@@ -126,8 +122,7 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
             byte[] a1 = ByteUtils.concact(a1FirstPart, toBytes(':' + nonce + ':' + cnonce));
             digestUri = "xmpp/" + serviceName;
             hex_hashed_a1 = StringUtils.encodeHex(ByteUtils.md5(a1));
-            String responseValue = calcResponse(hex_hashed_a1, nonce, cnonce, digestUri,
-                            DigestType.ClientResponse);
+            String responseValue = calcResponse(DigestType.ClientResponse);
             // @formatter:off
             // See RFC 2831 2.1.2 digest-response
             String saslString = "username=\"" + authenticationId + '"'
@@ -160,8 +155,7 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
                     throw new SmackException("No server response received while performing " + NAME
                                     + " authentication");
                 }
-                String expectedServerResponse = calcResponse(hex_hashed_a1, nonce, cnonce,
-                                digestUri, DigestType.ServerResponse);
+                String expectedServerResponse = calcResponse(DigestType.ServerResponse);
                 if (!serverResponse.equals(expectedServerResponse)) {
                     throw new SmackException("Invalid server response  while performing " + NAME
                                     + " authentication");
@@ -180,8 +174,7 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
         ServerResponse
     }
 
-    private static String calcResponse(String hex_hashed_a1, String nonce, String cnonce,
-                    String digestUri, DigestType digestType) {
+    private String calcResponse(DigestType digestType) {
         StringBuilder a2 = new StringBuilder();
         if (digestType == DigestType.ClientResponse) {
             a2.append("AUTHENTICATE");

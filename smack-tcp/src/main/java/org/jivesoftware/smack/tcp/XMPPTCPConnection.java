@@ -1059,7 +1059,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             // The server is challenging the SASL authentication made by the client
                             String challengeData = parser.nextText();
                             processPacket(new Challenge(challengeData));
-                            getSASLAuthentication().challengeReceived(challengeData);
+                            getSASLAuthentication().challengeReceived(challengeData, false);
                         }
                         else if (name.equals("success")) {
                             Success success = new Success(parser.nextText());

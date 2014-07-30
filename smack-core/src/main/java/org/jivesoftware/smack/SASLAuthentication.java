@@ -318,11 +318,12 @@ public class SASLAuthentication {
      * SASLMechanism in use.
      *
      * @param challenge a base64 encoded string representing the challenge.
+     * @param finalChallenge true if this is the last challenge send by the server within the success stanza
      * @throws SmackException
      */
-    public void challengeReceived(String challenge) throws SmackException {
+    public void challengeReceived(String challenge, boolean finalChallenge) throws SmackException {
         try {
-            currentMechanism.challengeReceived(challenge);
+            currentMechanism.challengeReceived(challenge, finalChallenge);
         } catch (SmackException e) {
             authenticationFailed(e);
             throw e;
@@ -341,7 +342,7 @@ public class SASLAuthentication {
         // character data of the <success/> element." The used SASL mechanism should be able to
         // verify the data send by the server in the success stanza, if any.
         if (success.getData() != null) {
-            challengeReceived(success.getData());
+            challengeReceived(success.getData(), true);
         }
         saslNegotiated = true;
         // Wake up the thread that is waiting in the #authenticate method

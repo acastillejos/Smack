@@ -84,7 +84,7 @@ public class BOSHPacketReader implements BOSHClientResponseListener {
                             // made by the client
                             final String challengeData = parser.nextText();
                             connection.getSASLAuthentication()
-                                    .challengeReceived(challengeData);
+                                    .challengeReceived(challengeData, true);
                             connection.processPacket(new Challenge(
                                     challengeData));
                         } else if (parser.getName().equals("success")) {
