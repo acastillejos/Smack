@@ -30,9 +30,25 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
     private static final String INITAL_NONCE = "00000001";
 
     /**
+     * The only 'qop' value supported by this implementation
+     */
+    private static final String QOP_VALUE = "auth";
+
+    private enum State {
+        INITIAL,
+        RESPONSE_SENT,
+        VALID_SERVER_RESPONSE,
+    }
+
+    /**
      * The state of the this instance of SASL DIGEST-MD5 authentication.
      */
     private State state = State.INITIAL;
+
+    private String nonce;
+    private String cnonce;
+    private String digestUri;
+    private String hex_hashed_a1;
 
     @Override
     protected void authenticateInternal(CallbackHandler cbh) throws SmackException {
@@ -62,14 +78,13 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
 
     @Override
     protected byte[] evaluateChallenge(byte[] challenge) throws SmackException {
+        if (challenge.length == 0) {
+            throw new SmackException("Initial challenge has zero length");
+        }
+        String[] challengeParts = (new String(challenge)).split(",");
         byte[] response = null;
         switch(state) {
         case INITIAL:
-            if (challenge.length == 0) {
-                throw new SmackException("Initial challenge has zero length");
-            }
-            String[] challengeParts = (new String(challenge)).split(",");
-            String nonce = null;
             for (String part : challengeParts) {
                 String[] keyValue = part.split("=");
                 assert(keyValue.length == 2);
@@ -99,14 +114,15 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
             }
             // RFC 2831 2.1.2.1 defines A1, A2, KD and response-value
             byte[] a1FirstPart = ByteUtils.md5(toBytes(authenticationId + ':' + serviceName + ':' + password));
-            String cnonce = StringUtils.randomString(32);
+            cnonce = StringUtils.randomString(32);
             byte[] a1 = ByteUtils.concact(a1FirstPart, toBytes(':' + nonce + ':' + cnonce));
-            String digestUri = "xmpp/" + serviceName;
-            byte[] a2 = toBytes("AUTHENTICATE:" + digestUri);
-            String hex_hashed_a1 = StringUtils.encodeHex(ByteUtils.md5(a1));
-            String hex_hashed_a2 = StringUtils.encodeHex(ByteUtils.md5(a2));
-            byte[] kd = ByteUtils.md5(toBytes(hex_hashed_a1 + ':' + nonce + ':' + INITAL_NONCE + ':' + cnonce + ":auth:" + hex_hashed_a2));
-            String responseValue = StringUtils.encodeHex(kd);
+            digestUri = "xmpp/" + serviceName;
+//            byte[] a2 = toBytes("AUTHENTICATE:" + digestUri);
+            hex_hashed_a1 = StringUtils.encodeHex(ByteUtils.md5(a1));
+//            String hex_hashed_a2 = StringUtils.encodeHex(ByteUtils.md5(a2));
+//            byte[] kd = ByteUtils.md5(toBytes(hex_hashed_a1 + ':' + nonce + ':' + INITAL_NONCE + ':' + cnonce + ":auth:" + hex_hashed_a2));
+//            String responseValue = StringUtils.encodeHex(kd);
+            String responseValue = calcResponse(hex_hashed_a1, nonce, cnonce, digestUri, DigestType.ClientResponse);
             // @formatter:off
             // See RFC 2831 2.1.2 digest-response
             String saslString = "username=\"" + authenticationId + '"'
@@ -123,8 +139,24 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
             state = State.RESPONSE_SENT;
             break;
         case RESPONSE_SENT:
-            // TODO Validate the server response. All we can do here is verifying that the server
-            // knows the user's password, but thats better then nothing.
+            String serverResponse = null;
+            for (String part : challengeParts) {
+                String[] keyValue = part.split("=");
+                assert(keyValue.length == 2);
+                String key = keyValue[0];
+                String value = keyValue[1];
+                if ("rspauth".equals(key)) {
+                    serverResponse = value;
+                    break;
+                }
+            }
+            if (serverResponse == null) {
+                throw new SmackException("No server response received while performing " + NAME + " authentication");
+            }
+            String expectedServerResponse = calcResponse(hex_hashed_a1, nonce, cnonce, digestUri, DigestType.ServerResponse);
+            if (!serverResponse.equals(expectedServerResponse)) {
+                throw new SmackException("Invalid server response  while performing " + NAME + " authentication");
+            }
             state = State.VALID_SERVER_RESPONSE;
             break;
          default:
@@ -133,10 +165,34 @@ public class SASLDigestMD5Mechanism extends SASLMechanism {
         return response;
     }
 
-    private enum State {
-        INITIAL,
-        RESPONSE_SENT,
-        VALID_SERVER_RESPONSE,
+    private enum DigestType {
+        ClientResponse,
+        ServerResponse
+    }
+
+    private static String calcResponse(String hex_hashed_a1, String nonce, String cnonce, String digestUri, DigestType digestType) {
+        StringBuilder a2 = new StringBuilder();
+        if (digestType == DigestType.ClientResponse) {
+            a2.append("AUTHENTICATE:");
+        }
+        a2.append(digestUri);
+        String hex_hashed_a2 = StringUtils.encodeHex(ByteUtils.md5(toBytes(a2.toString())));
+
+        StringBuilder kd_argument = new StringBuilder();
+        kd_argument.append(hex_hashed_a1);
+        kd_argument.append(':');
+        kd_argument.append(nonce);
+        kd_argument.append(':');
+        kd_argument.append(INITAL_NONCE);
+        kd_argument.append(':');
+        kd_argument.append(cnonce);
+        kd_argument.append(':');
+        kd_argument.append(QOP_VALUE);
+        kd_argument.append(':');
+        kd_argument.append(hex_hashed_a2);
+        byte[] kd = ByteUtils.md5(toBytes(kd_argument.toString()));
+        String responseValue = StringUtils.encodeHex(kd);
+        return responseValue;
     }
 
     private static byte[] toBytes(String string) {
